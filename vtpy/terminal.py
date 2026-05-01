@@ -33,9 +33,11 @@ class Terminal(ABC):
 
     G0_UK_CHARSET: bytes = b"(A"
     G0_US_CHARSET: bytes = b"(B"
+    G0_SE_CHARSET: bytes = b"(H"
     G0_BOX_CHARSET: bytes = b"(0"
     G1_UK_CHARSET: bytes = b")A"
     G1_US_CHARSET: bytes = b")B"
+    G1_SE_CHARSET: bytes = b"(H"
     G1_BOX_CHARSET: bytes = b")0"
 
     REQUEST_STATUS: bytes = b"[5n"
@@ -124,8 +126,8 @@ class Terminal(ABC):
         self.sendCommand(self.CLEAR_SCREEN)
         self.sendCommand(self.MOVE_CURSOR_ORIGIN)
         self.sendCommand(self.SET_NORMAL)
-        self.sendCommand(self.G0_US_CHARSET)
-        self.sendCommand(self.G1_BOX_CHARSET)
+        self.sendCommand(self.G0_SE_CHARSET)
+        self.sendCommand(self.G1_SE_CHARSET)
         self.sendCommand(self.TURN_OFF_AUTOWRAP)
         self.interface.write(b"\x0F")
         self.boxMode = False
@@ -179,9 +181,11 @@ class Terminal(ABC):
         elif cmd in {
             self.G0_UK_CHARSET,
             self.G0_US_CHARSET,
+            self.G0_SE_CHARSET,
             self.G0_BOX_CHARSET,
             self.G1_UK_CHARSET,
             self.G1_US_CHARSET,
+            self.G0_SE_CHARSET,
             self.G1_BOX_CHARSET,
             self.TURN_ON_REGION,
             self.TURN_OFF_REGION,
