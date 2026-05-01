@@ -4,7 +4,7 @@ setup(
     name="VTPy",
     version="1.0.18",
     description="Python abstraction layer for VT-100 terminals.",
-    author="Jennifer Taylor",
+    author="Jennifer Taylor, modified by Mater242",
     author_email="jen@superjentendo.com",
     url="https://github.com/mater242/vtpy_abc800",
     packages=["vtpy"],
