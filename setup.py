@@ -6,7 +6,7 @@ setup(
     description="Python abstraction layer for VT-100 terminals.",
     author="Jennifer Taylor",
     author_email="jen@superjentendo.com",
-    url="https://github.com/DragonMinded/vtpy",
+    url="https://github.com/mater242/vtpy_abc800",
     packages=["vtpy"],
     install_requires=[
         req for req in open("requirements.txt").read().split("\n") if len(req) > 0
