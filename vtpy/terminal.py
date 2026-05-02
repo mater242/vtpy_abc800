@@ -37,7 +37,7 @@ class Terminal(ABC):
     G0_BOX_CHARSET: bytes = b"(0"
     G1_UK_CHARSET: bytes = b")A"
     G1_US_CHARSET: bytes = b")B"
-    G1_SE_CHARSET: bytes = b"(H"
+    G1_SE_CHARSET: bytes = b")H"
     G1_BOX_CHARSET: bytes = b")0"
 
     REQUEST_STATUS: bytes = b"[5n"
@@ -121,7 +121,7 @@ class Terminal(ABC):
 
     def reset(self) -> None:
         self.sendCommand(self.SET_80_COLUMNS)
-        self.sendCommand("[1;24r".encode("utf-8"))
+        self.sendCommand("[1;24r".encode("ascii"))
         self.sendCommand(self.TURN_OFF_REGION)
         self.sendCommand(self.CLEAR_SCREEN)
         self.sendCommand(self.MOVE_CURSOR_ORIGIN)
@@ -215,7 +215,7 @@ class Terminal(ABC):
         if col < 1 or col > self.columns:
             return
 
-        self.sendCommand(f"[{row};{col}H".encode("utf-8"))
+        self.sendCommand(f"[{row};{col}H".encode("ascii"))
         self.cursor = (row, col)
 
     def fetchCursor(self) -> Tuple[int, int]:
@@ -237,11 +237,46 @@ class Terminal(ABC):
                 break
         else:
             raise TerminalException("Couldn't receive cursor position from terminal!")
-        respstr = resp[1:-1].decode("utf-8")
+        respstr = resp[1:-1].decode("ascii")
         row, col = respstr.split(";", 1)
         self.cursor = (int(row), int(col))
         return self.cursor
 
+    def sendBytes(self, data: bytes) -> None:
+        # Leave alternate character set mode before sending raw bytes.
+        if self.boxMode:
+            self.interface.write(b"\x0F")
+            self.boxMode = False
+    
+        self.interface.write(data)
+    
+        row, col = self.cursor
+    
+        if row != -1 and col != -1:
+            for value in data:
+                if value in {10, 13}:  # LF or CR
+                    row += 1
+                    col = 1
+                elif value < 32:
+                    row = -1
+                    col = -1
+                    break
+                else:
+                    col += 1
+                    if col > self.columns:
+                        if self.autowrap:
+                            col = 1
+                            row += 1
+                        else:
+                            col = self.columns
+    
+                    if row > self.rows:
+                        row = -1
+                        col = -1
+                        break
+    
+        self.cursor = (row, col)
+    
     def sendText(self, text: str) -> None:
         row, col = self.cursor
         inAlt = self.boxMode
@@ -295,7 +330,7 @@ class Terminal(ABC):
                     col = -1
 
             try:
-                return norm(data.encode("utf-8"))
+                return norm(data.encode("ascii"))
             except UnicodeEncodeError:
                 # Box drawing mappings to VT-100
                 if data == "\u2500":
@@ -513,7 +548,7 @@ class Terminal(ABC):
         self.setAutoWrap(False)
 
     def setScrollRegion(self, top: int, bottom: int) -> None:
-        self.sendCommand(f"[{top};{bottom}r".encode("utf-8"))
+        self.sendCommand(f"[{top};{bottom}r".encode("ascii"))
         self.sendCommand(self.TURN_ON_REGION)
 
     def clearScrollRegion(self) -> None:
