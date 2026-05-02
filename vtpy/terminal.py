@@ -241,41 +241,6 @@ class Terminal(ABC):
         row, col = respstr.split(";", 1)
         self.cursor = (int(row), int(col))
         return self.cursor
-
-    def sendBytes(self, data: bytes) -> None:
-        # Leave alternate character set mode before sending raw bytes.
-        if self.boxMode:
-            self.interface.write(b"\x0F")
-            self.boxMode = False
-    
-        self.interface.write(data)
-    
-        row, col = self.cursor
-    
-        if row != -1 and col != -1:
-            for value in data:
-                if value in {10, 13}:  # LF or CR
-                    row += 1
-                    col = 1
-                elif value < 32:
-                    row = -1
-                    col = -1
-                    break
-                else:
-                    col += 1
-                    if col > self.columns:
-                        if self.autowrap:
-                            col = 1
-                            row += 1
-                        else:
-                            col = self.columns
-    
-                    if row > self.rows:
-                        row = -1
-                        col = -1
-                        break
-    
-        self.cursor = (row, col)
     
     def sendText(self, text: str) -> None:
         row, col = self.cursor
