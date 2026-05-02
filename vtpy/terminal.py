@@ -121,7 +121,7 @@ class Terminal(ABC):
 
     def reset(self) -> None:
         self.sendCommand(self.SET_80_COLUMNS)
-        self.sendCommand("[1;24r".encode("ascii"))
+        self.sendCommand("[1;24r".encode("utf-8"))
         self.sendCommand(self.TURN_OFF_REGION)
         self.sendCommand(self.CLEAR_SCREEN)
         self.sendCommand(self.MOVE_CURSOR_ORIGIN)
@@ -215,7 +215,7 @@ class Terminal(ABC):
         if col < 1 or col > self.columns:
             return
 
-        self.sendCommand(f"[{row};{col}H".encode("ascii"))
+        self.sendCommand(f"[{row};{col}H".encode("utf-8"))
         self.cursor = (row, col)
 
     def fetchCursor(self) -> Tuple[int, int]:
@@ -237,7 +237,7 @@ class Terminal(ABC):
                 break
         else:
             raise TerminalException("Couldn't receive cursor position from terminal!")
-        respstr = resp[1:-1].decode("ascii")
+        respstr = resp[1:-1].decode("utf-8")
         row, col = respstr.split(";", 1)
         self.cursor = (int(row), int(col))
         return self.cursor
@@ -295,7 +295,7 @@ class Terminal(ABC):
                     col = -1
 
             try:
-                return norm(data.encode("ascii"))
+                return norm(data.encode("utf-8"))
             except UnicodeEncodeError:
                 # Box drawing mappings to VT-100
                 if data == "\u2500":
@@ -513,7 +513,7 @@ class Terminal(ABC):
         self.setAutoWrap(False)
 
     def setScrollRegion(self, top: int, bottom: int) -> None:
-        self.sendCommand(f"[{top};{bottom}r".encode("ascii"))
+        self.sendCommand(f"[{top};{bottom}r".encode("utf-8"))
         self.sendCommand(self.TURN_ON_REGION)
 
     def clearScrollRegion(self) -> None:
